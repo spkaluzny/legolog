@@ -1,0 +1,79 @@
+---
+title: "Our Lego Sets"
+author: "Stephen Kaluzny"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+```{r load_packages, echo=FALSE}
+suppressPackageStartupMessages(library("here"))
+suppressPackageStartupMessages(library("dplyr"))
+suppressPackageStartupMessages(library("ggplot2"))
+```
+
+## The Data
+
+Read the data from the LibreOffice spreadsheet.
+
+```{r read_data}
+d <- readODS::read_ods(here::here(file.path("data", "our_lego.ods")),
+  sheet="LEGO")
+```
+
+Select only our Lego, omitting the Lego we have given away or are
+planning to give away.
+
+```{r only_our_lego}
+indxGive_Away <- grep("Give Away", d[[1]])
+stopifnot(length(indxGive_Away) == 1)
+d <- d[seq_len(indxGive_Away - 1), ]
+```
+
+Clean up the data.
+
+```{r clean}
+# Drop all blank rows
+indxBlank <- which(apply(d, 1, function(x) sum(is.na(x))) == ncol(d))
+d <- d[-indxBlank, ]
+```
+
+```{r date}
+d[["Date"]] <- as.Date(d[["Date"]], format="%m/%d/%y")
+
+```{r names}
+names(d)
+```
+
+```{r class}
+sapply(d, class)
+```
+
+```{r}
+head(d[["Date"]], 15)
+```
+
+## Summary
+
+The resulting dataset has `r nrow(d)` observations.
+
+Total number of pieces is `r format(sum(d[["Pieces"]], na.rm=TRUE), digits=6)`.
+
+The first Lego was acquired `r min(d[["Date"]], na.rm=TRUE)`.
+It was `r indxMinDate <- which(d[["Date"]] == min(d[["Date"]], na.rm=TRUE)); d[indxMinDate, 1:2]`.
+
+## Appendix
+This is a reproducible document.
+All code are available at https://github.com/spkaluzny/legolog.
+The data is not publicly available.
+
+```{r sessionInfo}
+sessionInfo()
+```
