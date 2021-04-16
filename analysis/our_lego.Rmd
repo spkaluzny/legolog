@@ -24,8 +24,14 @@ suppressPackageStartupMessages(library("ggplot2"))
 Read the data from the LibreOffice spreadsheet.
 
 ```{r read_data}
-d <- readODS::read_ods(here::here(file.path("data", "our_lego.ods")),
-  sheet="LEGO")
+cache_data <- here::here(file.path("data", "our_lego.rds"))
+if(file.exists(cache_data)) {
+  d <- readRDS(cache_data)
+} else {
+  d <- readODS::read_ods(here::here(file.path("data", "our_lego.ods")),
+    sheet="LEGO")
+  saveRDS(d, cache_data)
+}
 ```
 
 Select only our Lego, omitting the Lego we have given away or are
@@ -45,8 +51,15 @@ indxBlank <- which(apply(d, 1, function(x) sum(is.na(x))) == ncol(d))
 d <- d[-indxBlank, ]
 ```
 
-```{r date}
+```{r convert_date}
 d[["Date"]] <- as.Date(d[["Date"]], format="%m/%d/%y")
+d[["PurchaseYear"]] <- lubridate::year(d[["Date"]])
+```
+
+```{r convert_cost}
+d[["Cost"]] <- as.numeric(d[["Cost"]])
+stopifnot(all(d[["Cost"]] >=0, na.rm=TRUE))
+```
 
 ```{r names}
 names(d)
@@ -56,10 +69,6 @@ names(d)
 sapply(d, class)
 ```
 
-```{r}
-head(d[["Date"]], 15)
-```
-
 ## Summary
 
 The resulting dataset has `r nrow(d)` observations.
@@ -67,7 +76,31 @@ The resulting dataset has `r nrow(d)` observations.
 Total number of pieces is `r format(sum(d[["Pieces"]], na.rm=TRUE), digits=6)`.
 
 The first Lego was acquired `r min(d[["Date"]], na.rm=TRUE)`.
-It was `r indxMinDate <- which(d[["Date"]] == min(d[["Date"]], na.rm=TRUE)); d[indxMinDate, 1:2]`.
+
+## Plots
+
+```{r sets_by_year}
+d %>% group_by(PurchaseYear) %>%
+  summarize(N = n()) %>%
+  ggplot(aes(x=PurchaseYear, y=N)) +
+    geom_line()
+```
+
+```{r pieces_by_year}
+d %>% group_by(PurchaseYear) %>%
+  summarize(PiecesYear = sum(Pieces, na.rm=TRUE)) %>%
+  ggplot(aes(x=PurchaseYear, y=PiecesYear)) +
+    geom_line()
+```
+
+```{r cost_by_year}
+d %>% group_by(PurchaseYear) %>%
+  summarise(CostYear = sum(Cost, na.rm=TRUE)) %>%
+  filter(PurchaseYear > 2015) %>%
+  # knitr::kable() %>%
+  ggplot(aes(x=PurchaseYear, y=CostYear)) +
+    geom_line()
+```
 
 ## Appendix
 This is a reproducible document.
