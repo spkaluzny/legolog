@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Introduction
 
 ```{r load_packages, echo=FALSE}
-suppressPackageStartupMessages(library("here"))
+# suppressPackageStartupMessages(library("here"))
 suppressPackageStartupMessages(library("dplyr"))
 suppressPackageStartupMessages(library("ggplot2"))
 ```
@@ -79,27 +79,62 @@ The first Lego was acquired `r min(d[["Date"]], na.rm=TRUE)`.
 
 ## Plots
 
+### Sets by Year
+
 ```{r sets_by_year}
 d %>% group_by(PurchaseYear) %>%
   summarize(N = n()) %>%
   ggplot(aes(x=PurchaseYear, y=N)) +
-    geom_line()
+    geom_line() +
+    ggtitle("Number of Sets Purchased by Year")
 ```
+
+```{r cumsum_sets}
+d %>%
+  mutate(TotalSets = seq.int(nrow(d))) %>%
+  ggplot(aes(x=Date, y=TotalSets)) +
+    geom_line() +
+    ggtitle("Cumulative Number of Sets by Date")
+```
+
+### Pieces by Year
 
 ```{r pieces_by_year}
 d %>% group_by(PurchaseYear) %>%
   summarize(PiecesYear = sum(Pieces, na.rm=TRUE)) %>%
   ggplot(aes(x=PurchaseYear, y=PiecesYear)) +
-    geom_line()
+    geom_line() +
+    ggtitle("Number of Pieces Purchased by Year")
 ```
 
-```{r cost_by_year}
+```{r cumsum_pieces}
+d %>% 
+  filter(!is.na(Pieces)) %>%
+  mutate(CumPieces = cumsum(Pieces)) %>%
+  ggplot(aes(x=Date, y=CumPieces)) +
+    geom_line() +
+    ggtitle("Cumulative Pieces Over Time")
+```
+
+### Spending by Year
+
+```{r spending_by_year}
 d %>% group_by(PurchaseYear) %>%
   summarise(CostYear = sum(Cost, na.rm=TRUE)) %>%
-  filter(PurchaseYear > 2015) %>%
+  # filter(PurchaseYear > 2015) %>%
   # knitr::kable() %>%
   ggplot(aes(x=PurchaseYear, y=CostYear)) +
-    geom_line()
+    geom_line() +
+    ggtitle("Lego Spending by Year")
+```
+
+```{r cumsum_spending}
+d %>%
+  filter(!is.na(Cost)) %>%
+  mutate(CumCost = cumsum(Cost)) %>%
+  ggplot(aes(x=Date, y=CumCost)) +
+    geom_line() +
+    ggtitle("Cumulative Lego Spending Over Time")
 ```
 
 ## Appendix
