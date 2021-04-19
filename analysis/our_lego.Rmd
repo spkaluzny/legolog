@@ -45,17 +45,21 @@ d <- d[seq_len(indxGive_Away - 1), ]
 
 Clean up the data.
 
+Remove all blank lines:
 ```{r clean}
-# Drop all blank rows
 indxBlank <- which(apply(d, 1, function(x) sum(is.na(x))) == ncol(d))
 d <- d[-indxBlank, ]
 ```
 
+Convert date, compute `PurchaseYear` and sort by date:
 ```{r convert_date}
 d[["Date"]] <- as.Date(d[["Date"]], format="%m/%d/%y")
 d[["PurchaseYear"]] <- lubridate::year(d[["Date"]])
+o <- order(d[["Date"]])
+d <- d[o, ]
 ```
 
+Clean up `Cost`:
 ```{r convert_cost}
 d[["Cost"]] <- as.numeric(d[["Cost"]])
 stopifnot(all(d[["Cost"]] >=0, na.rm=TRUE))
@@ -82,7 +86,8 @@ The first Lego was acquired `r min(d[["Date"]], na.rm=TRUE)`.
 ### Sets by Year
 
 ```{r sets_by_year}
-d %>% group_by(PurchaseYear) %>%
+d %>% filter(!is.na(PurchaseYear)) %>%
+  group_by(PurchaseYear) %>%
   summarize(N = n()) %>%
   ggplot(aes(x=PurchaseYear, y=N)) +
     geom_line() +
@@ -91,7 +96,8 @@ d %>% group_by(PurchaseYear) %>%
 
 ```{r cumsum_sets}
 d %>%
-  mutate(TotalSets = seq.int(nrow(d))) %>%
+  filter(!is.na(Date)) %>%
+  mutate(TotalSets = seq.int(length(Date))) %>%
   ggplot(aes(x=Date, y=TotalSets)) +
     geom_line() +
     ggtitle("Cumulative Number of Sets by Date")
@@ -100,7 +106,8 @@ d %>%
 ### Pieces by Year
 
 ```{r pieces_by_year}
-d %>% group_by(PurchaseYear) %>%
+d %>% filter(!is.na(PurchaseYear)) %>%
+  group_by(PurchaseYear) %>%
   summarize(PiecesYear = sum(Pieces, na.rm=TRUE)) %>%
   ggplot(aes(x=PurchaseYear, y=PiecesYear)) +
     geom_line() +
@@ -109,7 +116,7 @@ d %>% group_by(PurchaseYear) %>%
 
 ```{r cumsum_pieces}
 d %>% 
-  filter(!is.na(Pieces)) %>%
+  filter(!is.na(Pieces), !is.na(Date)) %>%
   mutate(CumPieces = cumsum(Pieces)) %>%
   ggplot(aes(x=Date, y=CumPieces)) +
     geom_line() +
@@ -119,7 +126,8 @@ d %>%
 ### Spending by Year
 
 ```{r spending_by_year}
-d %>% group_by(PurchaseYear) %>%
+d %>% filter(!is.na(PurchaseYear)) %>%
+  group_by(PurchaseYear) %>%
   summarise(CostYear = sum(Cost, na.rm=TRUE)) %>%
   # filter(PurchaseYear > 2015) %>%
   # knitr::kable() %>%
@@ -130,7 +138,7 @@ d %>% group_by(PurchaseYear) %>%
 
 ```{r cumsum_spending}
 d %>%
-  filter(!is.na(Cost)) %>%
+  filter(!is.na(Cost), !is.na(Date)) %>%
   mutate(CumCost = cumsum(Cost)) %>%
   ggplot(aes(x=Date, y=CumCost)) +
     geom_line() +
