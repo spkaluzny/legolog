@@ -91,6 +91,7 @@ d %>% filter(!is.na(PurchaseYear)) %>%
   summarize(N = n()) %>%
   ggplot(aes(x=PurchaseYear, y=N)) +
     geom_line() +
+    geom_point() +
     ggtitle("Number of Sets Purchased by Year")
 ```
 
@@ -99,7 +100,7 @@ d %>%
   filter(!is.na(Date)) %>%
   mutate(TotalSets = seq.int(length(Date))) %>%
   ggplot(aes(x=Date, y=TotalSets)) +
-    geom_line() +
+    geom_point(cex=0.5) +
     ggtitle("Cumulative Number of Sets by Date")
 ```
 
@@ -111,6 +112,7 @@ d %>% filter(!is.na(PurchaseYear)) %>%
   summarize(PiecesYear = sum(Pieces, na.rm=TRUE)) %>%
   ggplot(aes(x=PurchaseYear, y=PiecesYear)) +
     geom_line() +
+    geom_point() +
     ggtitle("Number of Pieces Purchased by Year")
 ```
 
@@ -119,7 +121,7 @@ d %>%
   filter(!is.na(Pieces), !is.na(Date)) %>%
   mutate(CumPieces = cumsum(Pieces)) %>%
   ggplot(aes(x=Date, y=CumPieces)) +
-    geom_line() +
+    geom_point(cex=0.5) +
     ggtitle("Cumulative Pieces Over Time")
 ```
 
@@ -133,6 +135,7 @@ d %>% filter(!is.na(PurchaseYear)) %>%
   # knitr::kable() %>%
   ggplot(aes(x=PurchaseYear, y=CostYear)) +
     geom_line() +
+    geom_point() +
     ggtitle("Lego Spending by Year")
 ```
 
@@ -141,7 +144,7 @@ d %>%
   filter(!is.na(Cost), !is.na(Date)) %>%
   mutate(CumCost = cumsum(Cost)) %>%
   ggplot(aes(x=Date, y=CumCost)) +
-    geom_line() +
+    geom_point(cex=0.5) +
     ggtitle("Cumulative Lego Spending Over Time")
 ```
 
