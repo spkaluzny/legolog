@@ -148,6 +148,34 @@ d %>%
     ggtitle("Cumulative Lego Spending Over Time")
 ```
 
+### Price per Piece
+
+```{r cost_vs_pieces}
+d %>%
+  filter(!is.na(Cost), !is.na(Pieces)) %>%
+  ggplot(aes(x=Pieces, y=Cost)) +
+    geom_point(cex=0.5) +
+    ggtitle("Cost vs Pieces")
+```
+
+```{r costperpiece}
+d %>%
+  filter(!is.na(Cost), !is.na(Pieces), !is.na(Date)) %>%
+  mutate(CostPerPiece = Cost/Pieces) %>%
+  ggplot(aes(x=CostPerPiece)) +
+    geom_histogram() +
+    ggtitle("Distribution of CostPerPiece")
+```
+
+```{r costperpiece_vs_date}
+d %>%
+  filter(!is.na(Cost), !is.na(Pieces), !is.na(Date)) %>%
+  mutate(CostPerPiece = Cost/Pieces) %>%
+  ggplot(aes(x=Date, y=CostPerPiece)) +
+    geom_point(cex=0.5) +
+    ggtitle("CostPerPiece vs Date")
+```
+
 ## Appendix
 This is a reproducible document.
 All code are available at https://github.com/spkaluzny/legolog.
